@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:api_project/const.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 class ApiUi extends StatefulWidget {
@@ -12,70 +11,68 @@ class ApiUi extends StatefulWidget {
 }
 
 class _ApiUiState extends State<ApiUi> {
-  List<dynamic> products = [];
+  List<dynamic> nekoImages = [];
   bool isLoading = true;
 
   @override
   void initState() {
+    // TODO: implement initState
+    getNekoImages();
+
     super.initState();
-    getProduct();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('API Usage'),
+        title: Text('Neko Images'),
         centerTitle: true,
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        child: Column(
-          children: products.map((product) {
-            return Card(
-              margin: const EdgeInsets.all(8),
-              child: ListTile(
-                title: Text(
-                  "${product['id'] ?? 'No ID'}. ${product['name'] ?? 'No Name'}",
-                ),
-                subtitle: Text(
-                  product['data'] != null
-                      ? "Color: ${product['data']['color'] ?? 'N/A'}\nCapacity: ${product['data']['capacity'] ?? 'N/A'}"
-                      : "No Additional Data",
-                ),
-              ),
-            );
-          }).toList(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          getNekoImages();
+        },
+        child: const Icon(
+          Icons.refresh_outlined,
+          color: Colors.white,
         ),
+        backgroundColor: Colors.pinkAccent,
       ),
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
+              child: Column(
+                children: nekoImages.map((neko) {
+                  return Card(
+                    color: Colors.pinkAccent.shade100,
+                    child: ListTile(
+                      title: Image.network(neko['url']),
+                      subtitle: Text('Details: ${neko['tags'] ?? 'no info'}',style: TextStyle(color: Colors.white),),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
     );
   }
 
-  Future<void> getProduct() async {
-    try {
+  Future<void> getNekoImages() async {
+    Uri uri = Uri.parse(apiAdress.apiBaseUrl);
+    final params = {'limit': '20'};
+    final uriWithParams = uri.replace(queryParameters: params);
 
-      Uri uri = Uri.parse('https://api.restful-api.dev/objects');
-      Response response = await get(uri);
+    Response response = await get(uriWithParams);
 
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = jsonDecode(response.body);
-        print("API Response: $jsonData");
-        products = jsonData;
-        setState(() {
-          isLoading = false;
-        });
-      } else {
-        print('Failed to load data: ${response.statusCode}');
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } catch (error) {
-      print('Error fetching data: $error');
-      setState(() {
-        isLoading = false;
-      });
+    if (response.statusCode == 200) {
+      final List<dynamic> nekoImg = jsonDecode(response.body);
+      nekoImages = nekoImg;
+      isLoading = false;
+      setState(() {});
+    }else{
+      'no Data Found';
     }
   }
 }

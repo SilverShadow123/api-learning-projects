@@ -8,6 +8,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: ApiUi(),
+      theme: ThemeData(
+        appBarTheme:  AppBarTheme(
+          color: Colors.pinkAccent.shade100,
+          titleTextStyle: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          )
+        )
+      ),
 
     );
   }
