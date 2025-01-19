@@ -16,9 +16,7 @@ class _ApiUiState extends State<ApiUi> {
 
   @override
   void initState() {
-    // TODO: implement initState
     getNekoImages();
-
     super.initState();
   }
 
@@ -26,34 +24,57 @@ class _ApiUiState extends State<ApiUi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Neko Images'),
+        title: const Text('Neko Images'),
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          getNekoImages();
-        },
+        onPressed: getNekoImages,
+        backgroundColor: Colors.pinkAccent,
         child: const Icon(
           Icons.refresh_outlined,
           color: Colors.white,
         ),
-        backgroundColor: Colors.pinkAccent,
       ),
       body: isLoading
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : SingleChildScrollView(
-              child: Column(
-                children: nekoImages.map((neko) {
+          : Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 8.0,
+                ),
+                itemCount: nekoImages.length,
+                itemBuilder: (context, index) {
+                  final neko = nekoImages[index];
                   return Card(
                     color: Colors.pinkAccent.shade100,
-                    child: ListTile(
-                      title: Image.network(neko['url']),
-                      subtitle: Text('Details: ${neko['tags'] ?? 'no info'}',style: TextStyle(color: Colors.white),),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Image.network(
+                            neko['url'],
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            neko['anime_name'] ?? 'No Info',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   );
-                }).toList(),
+                },
               ),
             ),
     );
@@ -61,18 +82,15 @@ class _ApiUiState extends State<ApiUi> {
 
   Future<void> getNekoImages() async {
     Uri uri = Uri.parse(apiAdress.apiBaseUrl);
-    final params = {'limit': '20'};
-    final uriWithParams = uri.replace(queryParameters: params);
-
-    Response response = await get(uriWithParams);
-
+    Response response = await get(uri);
     if (response.statusCode == 200) {
-      final List<dynamic> nekoImg = jsonDecode(response.body);
-      nekoImages = nekoImg;
+      final Map<String, dynamic> nekoImg = jsonDecode(response.body);
+      print(response.body);
+      nekoImages = nekoImg['results'];
       isLoading = false;
       setState(() {});
-    }else{
-      'no Data Found';
+    } else {
+      print('No Data Found');
     }
   }
 }
