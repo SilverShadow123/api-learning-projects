@@ -1,3 +1,6 @@
+import 'package:api_project/consts.dart';
+import 'package:api_project/create_product.dart';
+import 'package:api_project/products.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -12,7 +15,6 @@ class ApiUi extends StatefulWidget {
 }
 
 class _ApiUiState extends State<ApiUi> {
-  List<dynamic> products = [];
   bool isLoading = true;
 
   @override
@@ -27,41 +29,55 @@ class _ApiUiState extends State<ApiUi> {
       appBar: AppBar(
         title: const Text('API Usage'),
         centerTitle: true,
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              getProduct();
+              setState(() {
+              });
+            },
+            child: Icon(
+              Icons.refresh_outlined,
+            ),
+          ),
+        ],
       ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => CreateProduct()));
+          },
+          child: Icon(Icons.add)),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        child: Column(
-          children: products.map((product) {
-            return Card(
-              margin: const EdgeInsets.all(8),
-              child: ListTile(
-                title: Text(
-                  "${product['id'] ?? 'No ID'}. ${product['name'] ?? 'No Name'}",
-                ),
-                subtitle: Text(
-                  product['data'] != null
-                      ? "Color: ${product['data']['color'] ?? 'N/A'}\nCapacity: ${product['data']['capacity'] ?? 'N/A'}"
-                      : "No Additional Data",
-                ),
+              child: Column(
+                children: pro.products.map((product) {
+                  return Card(
+                    margin: const EdgeInsets.all(8),
+                    child: ListTile(
+                      title: Text(
+                        "${product['id'] ?? 'No ID'}. ${product['title'] ?? 'No Name'}",
+                      ),
+                      subtitle: Text("Description: ${product['body']}"),
+                    ),
+                  );
+                }).toList(),
               ),
-            );
-          }).toList(),
-        ),
-      ),
+            ),
     );
   }
 
+  //getMethod
   Future<void> getProduct() async {
     try {
-
-      Uri uri = Uri.parse('https://api.restful-api.dev/objects');
+      Uri uri = Uri.parse(ApiUrl.apiGetPostUrl);
       Response response = await get(uri);
 
       if (response.statusCode == 200) {
-        final List<dynamic> jsonData = jsonDecode(response.body);
+        final jsonData = jsonDecode(response.body);
         print("API Response: $jsonData");
-        products = jsonData;
+        pro.products = jsonData;
         setState(() {
           isLoading = false;
         });
