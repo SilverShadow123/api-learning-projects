@@ -33,6 +33,7 @@ class _ApiUiState extends State<ApiUi> {
           ElevatedButton(
             onPressed: () {
               getProduct();
+              isLoading = true;
               setState(() {
               });
             },
